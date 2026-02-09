@@ -1,0 +1,40 @@
+body{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#map { 
+    height: 50%;
+    width: 70%; 
+    background-color: #AAD3DF;
+    border: 2px solid black;
+    }
+    
+    h1{
+        text-align: center;
+    }
+    h2{
+        text-align: center;
+    }
+input{
+    font-size: 3em;
+
+}
+
+button{
+    font-size: 3em;
+    margin: 2rem;
+    border: none;
+    background-color: orange;
+    cursor: pointer;
+    transition: 0.2s ease;
+    border-radius: 3px;
+}
+
+button:hover{
+    background-color: orangered;
+}
