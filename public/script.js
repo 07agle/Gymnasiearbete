@@ -88,7 +88,6 @@ function resetMap() {
     }
     markerList = [];
   }
-
 }
 
 function submitDistance() {
@@ -106,6 +105,7 @@ function submitDistance() {
     }
   }
 }
+
 submitBtn.onclick = submitDistance;
 
 resetBtn.onclick = resetMap;
@@ -151,3 +151,4 @@ function confirmRoute(){
 /*Sedan ska man mata in:
 
 Distans, datum osv och sen ska det sparas i en ny databas där och det ska visualiseras på kartan. Detta ska kunnas göra flera gånger om */
+
