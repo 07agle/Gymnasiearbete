@@ -95,7 +95,7 @@ function submitDistance() {
     let newDistance
     distanceRun = Number(distanceInput.value);
     if(distanceRun <= totalDistance){
-     newDistance = totalDistance - distanceRun;
+     newDistance = Math.round(totalDistance - distanceRun);
      h1.textContent = "Distans i km: " + (newDistance / 1000).toFixed(2);
      h2.textContent = "Distans i meter: " + newDistance;
      getCoordinateAtDistance(currentRouteCoords, distanceRun);
