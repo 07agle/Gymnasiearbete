@@ -28,6 +28,7 @@ let markerList = [];
 let distance = 0;
 let currentRouteCoords;
 let routeControl;
+let totalDistance = 0;
 
 function onMapClick(e) {
   let latClick = e.latlng.lat;
