@@ -29,6 +29,7 @@ let distance = 0;
 let currentRouteCoords;
 let routeControl;
 let totalDistance = 0;
+let wholeRoute = null;
 
 function onMapClick(e) {
   let latClick = e.latlng.lat;
@@ -142,12 +143,41 @@ function getCoordinateAtDistance(currentRouteCoords, distanceRun) {
   console.log("Current position:", coordinateRunTo);
 }
 
-function confirmRoute(){
-  routeSubmitted = true;
-  map.off("click", onMapClick); 
+async function confirmRoute(){
+  if (!currentRouteCoords || markerList.length !== 2) {
+    h1.textContent = "Välj två punkter först.";
+    return;
+  }
+  else{
+    routeSubmitted = true;
+    map.off("click", onMapClick); 
+  }
+ 
+  const start = markerList[0].getLatLng();
+  const end = markerList[1].getLatLng();
+
+  const wholeRoute = {
+    startCoordinate: start,
+    endCoordinate: end,
+    date: new Date().toLocaleDateString("sv-SE"),
+    totalDistance,
+  };
+
+  confirmRouteBtn.style.display = "none";
+  console.log("Sparad route:", wholeRoute);
+
+  const res = await fetch("/api/routes", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(wholeRoute),
+  });
+  const saved = await res.json();
+  console.log("Servern sparade:", saved);
 
   //Spara den originella hela rutten i en databas
 }
+
+
 
 /*Sedan ska man mata in:
 
