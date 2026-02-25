@@ -1,0 +1,78 @@
+services:
+  nginx:
+    image: nginx:1.28.1-alpine # Ta bort om alpine om SSL
+    container_name: nginx
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Stockholm
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./www/public:/var/www/public:ro
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./config/ssl:/etc/ssl:ro
+    depends_on:
+      - php
+    networks:
+      - app-network
+
+  php:
+    build: ./docker/php
+    image: lemp-php:dev
+    container_name: php
+    restart: unless-stopped
+    command: php-fpm
+    volumes:
+      - ./www:/var/www
+      - ./config/php/php.ini:/usr/local/etc/php/php.ini:ro
+    networks:
+      - app-network
+    environment:
+      TZ: Europe/Stockholm
+
+  mariadb:
+    image: mariadb:11.8.5
+    container_name: mariadb
+    restart: unless-stopped
+    volumes:
+      - ./db:/var/lib/mysql
+      - ./config/mysql/my.cnf:/etc/mysql/my.cnf:ro
+    environment:
+      MYSQL_ROOT_PASSWORD: 12345
+      TZ: Europe/Stockholm
+    networks:
+      - app-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:5.2.3
+    container_name: pma
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mariadb
+      TZ: Europe/Stockholm
+    ports:
+      - "127.0.0.1:8080:80"
+    depends_on:
+      - mariadb
+    networks:
+      - app-network
+
+  backend:
+    image: node:20-alpine
+    container_name: backend
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    ports:
+        - "3001:3000"
+    depends_on:
+      - mariadb
+    networks:
+      - app-network
+    command: sh -c "npm install && npm run start"
+
+networks:
+  app-network:
+    driver: bridge

@@ -1,0 +1,14 @@
+.DS_Store
+
+node_modules/*
+
+db/*
+!db/.gitkeep
+
+!nginx
+nginx/*
+!nginx/nginx.conf
+
+!php
+php/*
+!php/php.ini
