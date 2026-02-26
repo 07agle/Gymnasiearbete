@@ -30,21 +30,25 @@ let routeControl;
 let totalDistance = 0;
 let routes = [];
 
+//När man klickar på kartan
 function onMapClick(e) {
 
+  //Kan bara klicka om en route inte är bestämd
   if(routes.length == 0){
 
-  
+    //Sparar koordinaterna för klicket
   let latClick = e.latlng.lat;
   let lngClick = e.latlng.lng;
   console.log(latClick, lngClick);
 
+  //Skapar ny marker där man klickar och lägger till på kartan
   let newMarker = L.marker([latClick, lngClick], {
    draggable: false
   }).addTo(map);
 
   markerList.push(newMarker);
 
+  //Om man klickar mer än 2 gånger så blir de de två senaste klicken som räknas
   if (markerList.length > 2) {
     let oldMarker = markerList[0];
     routeControl.remove();
@@ -52,6 +56,7 @@ function onMapClick(e) {
     markerList.shift();
   }
 
+  //Om det är två klick så tar den dn första och sista som start och slut och ritar rutten mellan dem
   if (markerList.length === 2) {
     let start = markerList[0].getLatLng();
     let end = markerList[1].getLatLng();
@@ -61,13 +66,14 @@ function onMapClick(e) {
 }
 }
 
-
+//Funktion för att rita rutten
 function drawRoute(start, end){
   if (routeControl) {
     routeControl.remove();
   }
 
   routeControl = L.Routing.control({
+    //Attribut för rutten
     lineOptions: {
       styles: [{ color: "orange", weight: 4 }]
     },
@@ -78,7 +84,8 @@ function drawRoute(start, end){
     draggable: false,
     draggableWaypoints: false
   })
-    .addTo(map)
+    .addTo(map) //Lägger till rutten på kartan
+    //När rutten hittas så räknar den ut den totala avståndet 
     .on("routesfound", function (e) {
       let route = e.routes[0];
       currentRouteCoords = route.coordinates;
@@ -91,9 +98,10 @@ function drawRoute(start, end){
     });
 }
 
+//När knappen submit klickas på så om distansen är mindre än totala distansen så ändrar den texten och kör funktionen getCoordinateAtDistance
 function submitDistance() {
   if(routeSubmitted){
-    let newDistance
+    let newDistance;
     distanceRun = Number(distanceInput.value);
     if(distanceRun <= totalDistance){
      newDistance = Math.round(totalDistance - distanceRun);
@@ -111,15 +119,15 @@ submitBtn.onclick = submitDistance;
 
 map.on("click", onMapClick);
 
-
 confirmRouteBtn.onclick = confirmRoute;
 
-
+//Lägger till bounds för att inte scrolle för långt
 let boundsZoom1 = L.latLngBounds(
   [-85, -170], 
   [85, 170] 
 );
 
+//Funktion som räknar ut närmsta koordinaten vid den distansen du matade in
 function getCoordinateAtDistance(currentRouteCoords, distanceRun) {
   let distanceCalculated = 0;
   let coordinateRunTo;
@@ -134,17 +142,22 @@ function getCoordinateAtDistance(currentRouteCoords, distanceRun) {
   }
 
   console.log(coordinateRunTo);
-  if (currentMarker) map.removeLayer(currentMarker);
-    currentMarker = L.marker(coordinateRunTo, { icon: runningIcon }).addTo(map);
-
+  //Om det redan finns en marker så ta bort den
+  if (currentMarker) {
+    map.removeLayer(currentMarker);
+  }
+  currentMarker = L.marker(coordinateRunTo, { icon: runningIcon }).addTo(map);
   console.log("Current position:", coordinateRunTo);
 }
 
+//Bekräftar routen och sparar den i databasen
 async function confirmRoute(){
+  //Om det inte finns några koordinater eller inte två markers så måste man välja två först
   if (!currentRouteCoords || markerList.length !== 2) {
     h1.textContent = "Välj två punkter först.";
     return;
   }
+  //Annars ska man inte kunna klicka på kartan något mer
   else{
     routeSubmitted = true;
     map.off("click", onMapClick); 
@@ -153,6 +166,7 @@ async function confirmRoute(){
   const start = markerList[0].getLatLng();
   const end = markerList[1].getLatLng();
 
+  //Skapar ett objekt som sedan skickas till backend för att läggas in i databasen
   const wholeRoute = {
     startCoordinate: start,
     endCoordinate: end,
@@ -163,6 +177,7 @@ async function confirmRoute(){
   confirmRouteBtn.style.display = "none";
   console.log("Sparad route:", wholeRoute);
 
+  //Skicka POST-request till backend för att spara rutten i databasen
   const res = await fetch("/api/routes", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -171,14 +186,14 @@ async function confirmRoute(){
   const saved = await res.json();
   console.log("Servern sparade:", saved);
 
-  //Spara den originella hela rutten i en databas
+  //Spara den originella hela rutten i en databas --- KLAR :D
 }
 
 /*Sedan ska man mata in:
 
 Distans, datum osv och sen ska det sparas i en ny databas där och det ska visualiseras på kartan. Detta ska kunnas göra flera gånger om */
 
-
+//Hämta sparade rutter från databasen när sidan startar
 async function loadRoutes() {
   const res = await fetch("/api/routes");
   routes = await res.json();
