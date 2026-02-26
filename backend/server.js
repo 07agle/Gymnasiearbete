@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import * as mariadb from "mariadb";
 
-const routes = [];
 const app = express();
 
 app.use(cors());
@@ -26,17 +25,14 @@ const pool = mariadb.createPool({
 const insertMainRouteSql = `
   INSERT INTO routes (uid, startLat, startLng, endLat, endLng, totalDistance, dateCreated) VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
-app.get("/api/routes", function (req, res) {
-  res.json(routes);
-});
+  app.get("/api/routes", async (req, res) => {
+      const rows = await pool.query("SELECT * FROM routes");
+      res.json(rows);
+  });
 
-app.get("/api/routes/:id", function (req, res) {
-  res.json(routes[Number(req.params.id) - 1]);
-});
 
 app.post("/api/routes", async (req, res) => {
   const route = {
-    id: routes.length + 1,
     startCoordinate: req.body.startCoordinate,
     endCoordinate: req.body.endCoordinate,
     date: req.body.date,
@@ -58,7 +54,6 @@ app.post("/api/routes", async (req, res) => {
     new Date(),
   ]);
 
-  routes.push(route);
   res.status(201).json(route);
 
 });

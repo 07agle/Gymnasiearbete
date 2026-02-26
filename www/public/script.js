@@ -1,4 +1,3 @@
-const resetBtn = document.getElementById("resetBtn");
 const h1 = document.getElementById("h1");
 const h2 = document.getElementById("h2");
 const submitBtn = document.getElementById("submitBtn");
@@ -29,8 +28,13 @@ let distance = 0;
 let currentRouteCoords;
 let routeControl;
 let totalDistance = 0;
+let routes = [];
 
 function onMapClick(e) {
+
+  if(routes.length == 0){
+
+  
   let latClick = e.latlng.lat;
   let lngClick = e.latlng.lng;
   console.log(latClick, lngClick);
@@ -52,43 +56,39 @@ function onMapClick(e) {
     let start = markerList[0].getLatLng();
     let end = markerList[1].getLatLng();
 
-    routeControl = L.Routing.control({
-      lineOptions: {
-        styles: [{ color: "orange", weight: 4 }]
-      },
-      waypoints: [start, end],
-      routeWhileDragging: false,
-      show: false,
-      addWaypoints: false,
-      draggable: false,
-      draggableWaypoints: false
-    })
-      .addTo(map)
-      .on("routesfound", function (e) {
-        let route = e.routes[0];
-        currentRouteCoords = route.coordinates;
-        console.log(currentRouteCoords);
-        totalDistance = route.summary.totalDistance;
-        h1.textContent = "Distans i km: " + (totalDistance / 1000).toFixed(2);
-        h2.textContent = "Distans i meter: " + totalDistance;
-        console.log("Distans (meter):", totalDistance);
-        console.log("Distans (km):", (totalDistance / 1000).toFixed(2));
-      });
+    drawRoute(start, end);
   }
 }
+}
 
-function resetMap() {
-  if(!routeSubmitted){
-    for (let i = 0; i < markerList.length; i++) {
-      map.removeLayer(markerList[i]);
-    }
-    h1.textContent = "Distans i km: ";
-    h2.textContent = "Distans i meter: ";
-    if(routeControl){
-      routeControl.remove();
-    }
-    markerList = [];
+
+function drawRoute(start, end){
+  if (routeControl) {
+    routeControl.remove();
   }
+
+  routeControl = L.Routing.control({
+    lineOptions: {
+      styles: [{ color: "orange", weight: 4 }]
+    },
+    waypoints: [start, end],
+    routeWhileDragging: false,
+    show: false,
+    addWaypoints: false,
+    draggable: false,
+    draggableWaypoints: false
+  })
+    .addTo(map)
+    .on("routesfound", function (e) {
+      let route = e.routes[0];
+      currentRouteCoords = route.coordinates;
+      console.log(currentRouteCoords);
+      totalDistance = route.summary.totalDistance;
+      h1.textContent = "Distans i km: " + (totalDistance / 1000).toFixed(2);
+      h2.textContent = "Distans i meter: " + totalDistance;
+      console.log("Distans (meter):", totalDistance);
+      console.log("Distans (km):", (totalDistance / 1000).toFixed(2));
+    });
 }
 
 function submitDistance() {
@@ -108,8 +108,6 @@ function submitDistance() {
 }
 
 submitBtn.onclick = submitDistance;
-
-resetBtn.onclick = resetMap;
 
 map.on("click", onMapClick);
 
@@ -181,3 +179,21 @@ async function confirmRoute(){
 Distans, datum osv och sen ska det sparas i en ny databas där och det ska visualiseras på kartan. Detta ska kunnas göra flera gånger om */
 
 
+async function loadRoutes() {
+  const res = await fetch("/api/routes");
+  routes = await res.json();
+
+  if(routes.length > 0){
+    const route = routes[0];
+    const start = L.latLng(route.startLat,route.startLng);
+    const end = L.latLng(route.endLat, route.endLng);
+    confirmRouteBtn.style.display = "none";
+    drawRoute(start, end);
+  }
+  console.log(routes);
+}
+
+window.onload = () => {
+  loadRoutes();
+  h1.textContent = "Räknar ut route...";
+};
