@@ -212,3 +212,4 @@ window.onload = () => {
   loadRoutes();
   h1.textContent = "Räknar ut route...";
 };
+
