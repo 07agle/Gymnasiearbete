@@ -98,7 +98,8 @@
       routeControl = undefined;
     }
 
-    routeControl = L.Routing.control({
+    routeControl = /** @type {any} */ (L).Routing.control({
+
       //Attribut för rutten
       lineOptions: {
         styles: [{ color: "orange", weight: 4 }],
@@ -170,17 +171,14 @@
   }
 </script>
 
-<main>
+
   <div id="mapContainer">
-    {#if routeExist}
-    <p>{(totalDistance/1000).toFixed(2)} km</p>
-    {/if}
     {#if !routeExist && !routeSubmitted}
       <button onclick={confirmRoute}>Confirm Route</button>
     {/if}
     <div bind:this={mapContainer} class="map"></div>
   </div>
-</main>
+
 
 <style>
   .map {
@@ -195,8 +193,8 @@
     transform: translateX(-50%);
     z-index: 1000;
 
-    padding: 8px 14px;
-    font-size: 14px;
+    padding: 0.67rem 1rem;
+    font-size: 1em;
     border: none;
     border-radius: 6px;
 
@@ -207,7 +205,9 @@
 
   #mapContainer {
     position: relative;
-    height: 50vh;
-    width: 50vw;
+    height: 100%;
+    width: 100%;
+    top:0;
+    left: 0;
   }
 </style>
