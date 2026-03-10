@@ -3,11 +3,12 @@ import cors from "cors";
 import * as mariadb from "mariadb";
 
 const app = express();
+let totalDistanceRun = 0;
 
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-let runs = [];
+
 //Starta servern
 const PORT = 3000;
 app.listen(PORT, "0.0.0.0", () => {
@@ -74,18 +75,48 @@ app.post("/api/routes", async (req, res) => {
 });
 
 
-// POST: Spara ny Run
+// GET: Hämta alla runs
+app.get("/api/runs", async (req, res) => {
+  try {
+    const rows = await pool.query("SELECT * FROM runs");
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+
+// POST: Spara ny run
 app.post("/api/runs", async (req, res) => {
-  // Skapar ett route-objekt från datan som skickats från frontend
   const run = {
+    routeId: req.body.routeId,
     distance: req.body.distance,
     date: req.body.date,
-}
-runs.push(run); 
-res.json(run);
+  };
+  if (!run.routeId || !run.distance || !run.date) {
+    return res.status(400).json({ error: "Missing run data" });
+  }
+
+  try {
+    await pool.query(insertMainRunsSql, [
+      run.routeId,
+      run.distance,
+      run.date,
+    ]);
+
+    await getTotalDistance();
+
+    res.status(201).json(run);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database error" });
+  }
+
 });
 
+const insertMainRunsSql = `
+  INSERT INTO runs (routeId, distance, runDate) VALUES (?, ?, ?)`;
 
-app.get("/api/runs", (req, res) => {
-  res.json(runs);
-});
+
+  

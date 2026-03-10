@@ -1,5 +1,5 @@
 <script>
-  let { currentRouteCoords, totalDistance } = $props();
+  let { currentRouteCoords, totalDistance, routeId } = $props();
   let distanceRun = $state(0);
   let date = $state("");
   //Funktion som räknar ut närmsta koordinaten vid den distansen du matade in
@@ -22,6 +22,7 @@ async function submitRun(event) {
     event.preventDefault();
     //Skapar ett objekt som sedan skickas till backend för att läggas in i databasen
     const run = {
+        routeId: routeId,
         distance: Number(distanceRun),
         date: date,
     };
@@ -38,13 +39,7 @@ const res = await fetch("/api/runs", {
 const saved = await res.json();
 console.log("Servern sparade:", saved);
 
-
   }
-
-  
-
-  
-
     /* console.log(coordinateRunTo);
     //Om det redan finns en marker så ta bort den
     if (currentMarker) {

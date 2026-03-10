@@ -8,7 +8,6 @@ import "leaflet/dist/leaflet.css";
   let routeExist = $derived(routes.length > 0 ? true : false);
   let currentRoute = $derived(routes.length > 0 ? routes[0] : null);
   let totalDistance = $derived(currentRoute?.totalDistance ?? 0);
-  let distanceRun = $state(220000);
   let currentRouteCoords = $derived(routes.length > 0 ? currentRoute.coordinates : null);
   
 async function loadRoutes() {
@@ -22,8 +21,8 @@ onMount(async () => {
 
 <main>
 <div class="leftPanel">
-<Stats totalDistance={totalDistance} distanceRun={distanceRun} />
-<AddRun currentRouteCoords={currentRouteCoords} totalDistance={totalDistance}/>
+<Stats totalDistance={totalDistance}/>
+<AddRun currentRouteCoords={currentRouteCoords} totalDistance={totalDistance} routeId = {currentRoute.id}/>
 </div>
 <Map currentRoute={currentRoute} routeExist={routeExist}></Map>
 
@@ -33,3 +32,4 @@ onMount(async () => {
 <p>{JSON.stringify(routes)}</p>
 -->
 </main>
+

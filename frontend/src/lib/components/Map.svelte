@@ -9,6 +9,8 @@
   import markerIcon from "leaflet/dist/images/marker-icon.png?url";
   import markerShadow from "leaflet/dist/images/marker-shadow.png?url";
 
+  
+
   const defaultIcon = L.icon({
     iconRetinaUrl: markerIcon2x,
     iconUrl: markerIcon,
@@ -43,17 +45,19 @@
       noWrap: true,
     }).addTo(map);
 
+
     map.on("click", onMapClick);
     loadRoutes();
   });
 
   $effect(() => {
-    if (!map){
-    return;}
-    else{
-        loadRoutes();
-    }
-  });
+  if (!map){
+    return;
+  }
+  else{
+    loadRoutes();
+  }
+});
 
   //När man klickar på kartan
   function onMapClick(e) {
@@ -93,6 +97,7 @@
   }
 
   function drawRoute(start, end) {
+    
     if (routeControl) {
       routeControl.remove();
       routeControl = undefined;
