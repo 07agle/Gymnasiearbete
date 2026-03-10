@@ -18,7 +18,7 @@
 <div class="statsContainer">
     <p><b>Total distance: </b> {totalDistance}m</p>
     <p><b>Distance run so far: </b> {distanceRun}m</p>
-    <p><b>Distance left: </b> {distanceLeft}</p>
+    <p><b>Distance left: </b> {distanceLeft}m</p>
     <div class="progressContainer">
         <div class="progressBar" style="width: {progress}%;">{progress}%</div>
     </div>
@@ -28,11 +28,9 @@
   .statsContainer{
   display: flex;
   flex-direction: column;
-
   padding: 1rem;
-  width: 20%;
+  width: 100%;
   height: fit-content;
-  margin-right: 2rem;
 
   background: white;
   border-radius: 10px;

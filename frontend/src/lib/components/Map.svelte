@@ -168,6 +168,7 @@
     console.log("Servern sparade:", saved);
 
     //Spara den originella hela rutten i en databas --- KLAR :D
+    location.reload();
   }
 </script>
 

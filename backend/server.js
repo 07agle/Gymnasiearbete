@@ -7,7 +7,7 @@ const app = express();
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
+let runs = [];
 //Starta servern
 const PORT = 3000;
 app.listen(PORT, "0.0.0.0", () => {
@@ -71,4 +71,21 @@ app.post("/api/routes", async (req, res) => {
   // Skickar tillbaka routen som bekräftelse till frontend
   res.status(201).json(route);
 
+});
+
+
+// POST: Spara ny Run
+app.post("/api/runs", async (req, res) => {
+  // Skapar ett route-objekt från datan som skickats från frontend
+  const run = {
+    distance: req.body.distance,
+    date: req.body.date,
+}
+runs.push(run); 
+res.json(run);
+});
+
+
+app.get("/api/runs", (req, res) => {
+  res.json(runs);
 });
