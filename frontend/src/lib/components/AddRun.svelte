@@ -18,8 +18,7 @@
     }
 }
 
-async function submitRun(event) {
-    event.preventDefault();
+async function submitRun() {
     //Skapar ett objekt som sedan skickas till backend för att läggas in i databasen
     const run = {
         routeId: routeId,
@@ -52,6 +51,7 @@ console.log("Servern sparade:", saved);
 </script>
 
 <form>
+  <h3>Lägg till runda</h3>
   <input type="number" min="1" bind:value={distanceRun}/>
   <input type="date" bind:value={date}/>
   <button onclick={submitRun}>Submit</button>
@@ -71,6 +71,11 @@ console.log("Servern sparade:", saved);
     font-family: system-ui, sans-serif;
   }
 
+  h3{
+    border-bottom: 2px #999999 solid;
+    margin-bottom: 0.5rem;
+  }
+
   input {
     padding: 6px 8px;
     border: 1px solid #ccc;
@@ -83,9 +88,15 @@ console.log("Servern sparade:", saved);
     padding: 6px 10px;
     border: none;
     border-radius: 6px;
-    background-color: orange;
+    background-color: #ffa600;
     color: white;
     font-size: 14px;
     cursor: pointer;
+    transition: 0.2s ease;
+  }
+
+  button:hover{
+    background-color: 
+    #e69500;
   }
 </style>

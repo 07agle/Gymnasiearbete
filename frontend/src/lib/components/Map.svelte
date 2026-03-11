@@ -38,8 +38,8 @@
   onMount(() => {
     map = L.map(mapContainer).setView([56.1424, 12.5136], 5);
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 25,
-      minZoom: 1,
+      maxZoom: 17,
+      minZoom: 2,
       attribution:
         '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       noWrap: true,
@@ -192,6 +192,7 @@
     width: 100%;
     background-color: #AAD3DF;
   }
+
   button {
     position: absolute;
     bottom: 5%;

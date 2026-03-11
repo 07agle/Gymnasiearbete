@@ -32,6 +32,7 @@
 </script>
 
 <div class="statsContainer">
+<h3>Statistik</h3>
   <p><b>Total distance: </b> {totalDistance}m</p>
   <p><b>Distance run so far: </b> {totalDistanceRun}m</p>
   <p><b>Distance left: </b> {distanceLeft}m</p>
@@ -58,6 +59,10 @@
   p {
     margin: 0;
     font-size: 1em;
+  }
+  h3{
+    border-bottom: 2px #999999 solid;
+    margin-bottom: 0.5rem;
   }
 
   .progressContainer {
