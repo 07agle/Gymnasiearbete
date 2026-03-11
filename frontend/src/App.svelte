@@ -27,7 +27,7 @@ onMount(async () => {
 <main>
 <div class="leftPanel">
 <Stats totalDistance={totalDistance}/>
-<AddRun currentRouteCoords={currentRouteCoords} totalDistance={totalDistance} routeId = {currentRoute.id}/>
+<AddRun routeId = {currentRoute.id}/>
 <PreviousRuns/>
 </div>
 <Map currentRoute={currentRoute} routeExist={routeExist}></Map>

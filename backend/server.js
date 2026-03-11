@@ -118,5 +118,19 @@ app.post("/api/runs", async (req, res) => {
 const insertMainRunsSql = `
   INSERT INTO runs (routeId, distance, runDate) VALUES (?, ?, ?)`;
 
-
+  app.delete("/api/runs/:id", async (req, res) => {
+    const { id } = req.params;
   
+    try {
+      const result = await pool.query("DELETE FROM runs WHERE id = ?", [id]);
+  
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: "Run not found" });
+      }
+  
+      res.status(200).json({ message: "Run deleted" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Failed to delete run" });
+    }
+  });

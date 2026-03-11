@@ -1,23 +1,8 @@
 <script>
-  let { currentRouteCoords, totalDistance, routeId } = $props();
+  let {routeId } = $props();
   let distanceRun = $state(0);
   let date = $state("");
-  //Funktion som räknar ut närmsta koordinaten vid den distansen du matade in
-  function getCoordinateAtDistance(currentRouteCoords, distanceRun) {
-    let distanceCalculated = 0;
-    let coordinateRunTo;
-    for (let i = 1; i < currentRouteCoords.length; i++) {
-      if (distanceCalculated < distanceRun) {
-        distanceCalculated += currentRouteCoords[i].distanceTo(
-          currentRouteCoords[i - 1]
-        );
-      } else if (distanceCalculated >= distanceRun) {
-        coordinateRunTo = currentRouteCoords[i];
-        break;
-      }
-    }
-}
-
+  
 async function submitRun() {
     //Skapar ett objekt som sedan skickas till backend för att läggas in i databasen
     const run = {

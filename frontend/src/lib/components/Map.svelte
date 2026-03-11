@@ -9,11 +9,19 @@
   import markerIcon from "leaflet/dist/images/marker-icon.png?url";
   import markerShadow from "leaflet/dist/images/marker-shadow.png?url";
 
-  
-
   const defaultIcon = L.icon({
     iconRetinaUrl: markerIcon2x,
     iconUrl: markerIcon,
+    shadowUrl: markerShadow,
+    iconSize: [20, 32],
+    iconAnchor: [10, 32],
+    popupAnchor: [1, -28],
+    shadowSize: [32, 32],
+  });
+
+const startIcon = L.icon({
+    iconRetinaUrl: markerIcon2x,
+    iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
     shadowUrl: markerShadow,
     iconSize: [20, 32],
     iconAnchor: [10, 32],
@@ -29,9 +37,17 @@
   let markerList = [];
   let routeControl;
   let distance = 0;
+  let distanceRun = $state(0);
   let currentRouteCoords;
   let totalDistance = $state(0);
   let routeSubmitted = $state(false);
+  let runningIcon = L.icon({
+    iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png", 
+    iconSize: [20, 32],
+    iconAnchor: [10, 32],
+    shadowSize: [32, 32],
+    shadowUrl: markerShadow,
+});
 
   let { currentRoute, routeExist } = $props();
 
@@ -48,6 +64,7 @@
 
     map.on("click", onMapClick);
     loadRoutes();
+    loadRuns();
   });
 
   $effect(() => {
@@ -68,9 +85,12 @@
       let lngClick = e.latlng.lng;
       console.log(latClick, lngClick);
 
+      let iconToUse = markerList.length === 0 ? startIcon : defaultIcon;
+
       //Skapar ny marker där man klickar och lägger till på kartan
       let newMarker = L.marker([latClick, lngClick], {
         draggable: false,
+        icon: iconToUse
       }).addTo(map);
 
       markerList.push(newMarker);
@@ -115,6 +135,7 @@
       addWaypoints: false,
       draggable: false,
       draggableWaypoints: false,
+      
     })
       .addTo(map) //Lägger till rutten på kartan
       //När rutten hittas så räknar den ut den totala avståndet
@@ -125,6 +146,7 @@
         totalDistance = route.summary.totalDistance;
         console.log("Distans (meter):", totalDistance);
         console.log("Distans (km):", (totalDistance / 1000).toFixed(2));
+        getCoordinateAtDistance(currentRouteCoords, distanceRun);
       });
   }
 
@@ -137,6 +159,29 @@
     }
     console.log(currentRoute);
   }
+
+  //Funktion som räknar ut närmsta koordinaten vid den distansen du matade in
+function getCoordinateAtDistance(currentRouteCoords, distanceRun) {
+  let distanceCalculated = 0;
+  let coordinateRunTo;
+  for (let i = 1; i < currentRouteCoords.length; i++) {
+    if (distanceCalculated < distanceRun) {
+      distanceCalculated += currentRouteCoords[i].distanceTo(
+        currentRouteCoords[i - 1]);
+    } else if (distanceCalculated >= distanceRun) {
+      coordinateRunTo = currentRouteCoords[i];
+      break;
+    }
+  }
+
+  console.log(coordinateRunTo);
+  //Om det redan finns en marker så ta bort den
+  if (currentMarker) {
+    map.removeLayer(currentMarker);
+  }
+  currentMarker = L.marker(coordinateRunTo, { icon: runningIcon }).addTo(map);
+  console.log("Current position:", coordinateRunTo);
+}
 
   //Bekräftar routen och sparar den i databasen
   async function confirmRoute() {
@@ -174,7 +219,21 @@
 
     //Spara den originella hela rutten i en databas --- KLAR :D
     location.reload();
+
+    
+  
+}
+
+async function loadRuns() {
+      distanceRun = 0;
+      const res = await fetch("/api/runs");
+      const runs = await res.json();
+
+    for (let run of runs) {
+    distanceRun += Number(run.distance);
   }
+}
+
 </script>
 
 
