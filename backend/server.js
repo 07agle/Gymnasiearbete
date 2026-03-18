@@ -3,7 +3,6 @@ import cors from "cors";
 import * as mariadb from "mariadb";
 
 const app = express();
-let totalDistanceRun = 0;
 
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
@@ -25,7 +24,7 @@ const pool = mariadb.createPool({
 });
 
 // SQL-query för att spara en route
-// id är AUTO_INCREMENT → skickas INTE in
+// id är AUTO_INCREMENT, skickas INTE in
 const insertMainRouteSql = `
   INSERT INTO routes (uid, startLat, startLng, endLat, endLng, totalDistance, dateCreated) VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
@@ -73,7 +72,6 @@ app.post("/api/routes", async (req, res) => {
   res.status(201).json(route);
 
 });
-
 
 // GET: Hämta alla runs
 app.get("/api/runs", async (req, res) => {
@@ -134,3 +132,5 @@ const insertMainRunsSql = `
       res.status(500).json({ error: "Failed to delete run" });
     }
   });
+  
+  

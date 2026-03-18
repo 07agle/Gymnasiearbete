@@ -48,11 +48,9 @@
     padding: 1rem;
     width: 100%;
     height: fit-content;
-
     background: white;
     border-radius: 10px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-
     font-family: system-ui, sans-serif;
   }
 
@@ -75,8 +73,10 @@
 
   .progressBar {
     text-align: right;
-    background-color: orange;
+    background: #FFA600;
+    background: linear-gradient(90deg,rgba(255, 166, 0, 1) 64%, rgba(255, 208, 0, 1) 100%);
     padding-right: 1rem;
     color: white;
+    font-weight: bold;
   }
 </style>

@@ -13,24 +13,37 @@ import "leaflet/dist/leaflet.css";
   let currentRoute = $derived(routes.length > 0 ? routes[0] : null);
   let totalDistance = $derived(currentRoute?.totalDistance ?? 0);
   let currentRouteCoords = $derived(routes.length > 0 ? currentRoute.coordinates : null);
+  let loading = $state(true);
   
-async function loadRoutes() {
+  async function loadRoutes() {
   const res = await fetch("/api/routes");
-  routes = await res.json();
+  const data = await res.json();
+
+  console.log("ROUTES:", data);
+  routes = data;
+  loading = false;
 }
+
 onMount(async () => {
   await loadRoutes();
 }) ;
+
+
 </script>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <main>
+  {#if loading}
+  <p>Laddar...</p>
+{:else}
 <div class="leftPanel">
 <Stats totalDistance={totalDistance}/>
 <AddRun routeId = {currentRoute.id}/>
 <PreviousRuns/>
 </div>
 <Map currentRoute={currentRoute} routeExist={routeExist}></Map>
+{/if}
+
 
 <!--
 <h1>{routeExist + " dat"}</h1>

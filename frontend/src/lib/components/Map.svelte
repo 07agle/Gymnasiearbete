@@ -36,7 +36,6 @@ const startIcon = L.icon({
   let currentMarker = null;
   let markerList = [];
   let routeControl;
-  let distance = 0;
   let distanceRun = $state(0);
   let currentRouteCoords;
   let totalDistance = $state(0);
@@ -54,14 +53,23 @@ const startIcon = L.icon({
   onMount(() => {
     map = L.map(mapContainer).setView([56.1424, 12.5136], 5);
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 17,
+      maxZoom: 18,
       minZoom: 2,
       attribution:
         '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       noWrap: true,
     }).addTo(map);
 
+ if (!routeExist  && navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition((position) => {
+      map.flyTo(
+        [position.coords.latitude, position.coords.longitude],
+        15
+      );
+    });
+  }
 
+  console.log("Routeexists: "+routeExist);
     map.on("click", onMapClick);
     loadRoutes();
     loadRuns();
@@ -73,6 +81,7 @@ const startIcon = L.icon({
   }
   else{
     loadRoutes();
+    
   }
 });
 
@@ -135,7 +144,6 @@ const startIcon = L.icon({
       addWaypoints: false,
       draggable: false,
       draggableWaypoints: false,
-      
     })
       .addTo(map) //Lägger till rutten på kartan
       //När rutten hittas så räknar den ut den totala avståndet
@@ -219,9 +227,6 @@ function getCoordinateAtDistance(currentRouteCoords, distanceRun) {
 
     //Spara den originella hela rutten i en databas --- KLAR :D
     location.reload();
-
-    
-  
 }
 
 async function loadRuns() {
@@ -233,6 +238,7 @@ async function loadRuns() {
     distanceRun += Number(run.distance);
   }
 }
+
 
 </script>
 
@@ -264,9 +270,15 @@ async function loadRuns() {
     border: none;
     border-radius: 6px;
 
-    background: white;
+    background:  #ffa600;
     cursor: pointer;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    transition: 0.3s ease;
+    color: white;
+  }
+
+  button:hover{
+    background-color: #e69500;
   }
 
   #mapContainer {
