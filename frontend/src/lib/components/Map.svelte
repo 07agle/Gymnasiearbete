@@ -71,7 +71,6 @@ const startIcon = L.icon({
 
   console.log("Routeexists: "+routeExist);
     map.on("click", onMapClick);
-    loadRoutes();
     loadRuns();
   });
 

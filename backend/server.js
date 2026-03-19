@@ -1,10 +1,11 @@
 import express from "express";
 import cors from "cors";
 import * as mariadb from "mariadb";
+import bcrypt from "bcrypt";           
+import session from "express-session"; 
 
 const app = express();
-const bcrypt = require('bcrypt');
-const session = require('express-session')
+
 
 app.use(cors({
   origin: "http://localhost:5173", 
@@ -13,6 +14,7 @@ app.use(cors({
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(session({
+  name: "sid",
   secret: "hemlig-nyckel",
   resave: false,
   saveUninitialized: false,
@@ -49,16 +51,13 @@ const insertMainRouteSql = `
       if(!req.session.userId){
         return res.status(400).json({ error: "Missing data" });
       }
-        // Hämtar alla routes från databasen
-     const rows = await pool.query("SELECT * FROM routes WHERE uid =?",[req.session.userId]);
-     // Skickar datan som JSON till frontend
-     res.json(rows);
+      const rows = await pool.query("SELECT * FROM routes WHERE uid =?",[req.session.userId]);
+      res.json(rows);
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "Database error" });
     }
-  });
-
+});
 // POST: Spara ny route
 app.post("/api/routes", async (req, res) => {
   // Skapar ett route-objekt från datan som skickats från frontend
