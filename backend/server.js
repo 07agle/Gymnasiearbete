@@ -8,6 +8,8 @@ app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+const bcrypt = require('bcrypt');
+
 //Starta servern
 const PORT = 3000;
 app.listen(PORT, "0.0.0.0", () => {
@@ -27,7 +29,6 @@ const pool = mariadb.createPool({
 // id är AUTO_INCREMENT, skickas INTE in
 const insertMainRouteSql = `
   INSERT INTO routes (uid, startLat, startLng, endLat, endLng, totalDistance, dateCreated) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-
 
   // GET: Hämta alla routes
   app.get("/api/routes", async (req, res) => {
@@ -133,4 +134,45 @@ const insertMainRunsSql = `
     }
   });
   
+  //Registrera användare:
+  app.post("/api/register", async (req, res) => {
+    const user = {
+      username: req.body.username,
+      password: req.body.password,
+    };
+   
+    if (!user.username || !user.password) {
+      return res.status(400).json({ error: "Missing user data" });
+    }
   
+    try {
+
+      const [existingUser] = await pool.query("SELECT uid FROM users WHERE username = ?", [user.username]);
+
+      if(existingUser.length > 0){
+        return res.status(409).json({ error: "Username already taken" });
+      }
+      else{
+        const hashedPassword = await bcrypt.hash(user.password, 10);
+        user.password = hashedPassword;
+  
+        await pool.query(insertMainUsersSql, [
+          user.username,
+          user.password,
+          new Date(),
+        ]);
+        res.status(201).json("Success user added");
+      }
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Database error" });
+    }
+  
+  });
+
+  const insertMainUsersSql = `
+  INSERT INTO users (username, password, dateCreated) VALUES (?, ?, ?)`;
+
+  app.post("/api/login", async (req, res) => {
+
+  });
