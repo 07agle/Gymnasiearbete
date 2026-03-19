@@ -3,12 +3,25 @@ import cors from "cors";
 import * as mariadb from "mariadb";
 
 const app = express();
+const bcrypt = require('bcrypt');
+const session = require('express-session')
 
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:5173", 
+  credentials: true,
+}));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
-const bcrypt = require('bcrypt');
+app.use(session({
+  secret: "hemlig-nyckel",
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: false,
+    httpOnly: true,
+    sameSite: "lax",
+  },
+}));
 
 //Starta servern
 const PORT = 3000;
@@ -33,10 +46,13 @@ const insertMainRouteSql = `
   // GET: Hämta alla routes
   app.get("/api/routes", async (req, res) => {
     try {
-      // Hämtar alla routes från databasen
-      const rows = await pool.query("SELECT * FROM routes");
-      // Skickar datan som JSON till frontend
-      res.json(rows);
+      if(!req.session.userId){
+        return res.status(400).json({ error: "Missing data" });
+      }
+        // Hämtar alla routes från databasen
+     const rows = await pool.query("SELECT * FROM routes WHERE uid =?",[req.session.userId]);
+     // Skickar datan som JSON till frontend
+     res.json(rows);
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "Database error" });
@@ -60,7 +76,7 @@ app.post("/api/routes", async (req, res) => {
 
     // Kör INSERT-query och sparar routen i databasen
   await pool.query(insertMainRouteSql, [
-    1,
+    req.session.userId,
     route.startCoordinate.lat,
     route.startCoordinate.lng,
     route.endCoordinate.lat,
@@ -77,7 +93,7 @@ app.post("/api/routes", async (req, res) => {
 // GET: Hämta alla runs
 app.get("/api/runs", async (req, res) => {
   try {
-    const rows = await pool.query("SELECT * FROM runs");
+    const rows = await pool.query("SELECT * FROM runs WHERE routeId =?",[req.query.routeId]);
     res.json(rows);
   } catch (err) {
     console.error(err);
@@ -103,8 +119,6 @@ app.post("/api/runs", async (req, res) => {
       run.distance,
       run.date,
     ]);
-
-    await getTotalDistance();
 
     res.status(201).json(run);
   } catch (err) {
@@ -147,7 +161,7 @@ const insertMainRunsSql = `
   
     try {
 
-      const [existingUser] = await pool.query("SELECT uid FROM users WHERE username = ?", [user.username]);
+      const existingUser = await pool.query("SELECT uid FROM users WHERE username = ?", [user.username]);
 
       if(existingUser.length > 0){
         return res.status(409).json({ error: "Username already taken" });
@@ -173,6 +187,51 @@ const insertMainRunsSql = `
   const insertMainUsersSql = `
   INSERT INTO users (username, password, dateCreated) VALUES (?, ?, ?)`;
 
+  //Logga in
   app.post("/api/login", async (req, res) => {
 
+    const user = {
+      username: req.body.username,
+      password: req.body.password,
+    };
+
+    if (!user.username || !user.password) {
+      return res.status(400).json({ error: "Missing user data" });
+    }
+
+    try {
+      const users = await pool.query("SELECT * FROM users WHERE username = ?",[user.username]);
+      
+      if(users.length === 0){
+        return res.status(401).json({ error: "Wrong username or password" });
+      }
+      else {
+        const foundUser = users[0];
+        const passwordsMatch = await bcrypt.compare(user.password, foundUser.password);
+        if(!passwordsMatch){
+          return res.status(401).json({ error: "Wrong username or password" });
+        }
+        else{
+          req.session.userId = foundUser.uid;
+          if (!req.session.userId) {
+            return res.status(401).json({ error: "Not logged in" });
+          }
+          else{
+            return res.status(200).json({ message: "Login successful" });
+          }
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Database error" });
+    }
   });
+
+  //Logga ut
+app.post("/api/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) return res.status(500).json({ error: "Kunde inte logga ut" });
+    res.clearCookie('sid'); // Eller vad din cookie heter
+    res.json({ message: "Utloggad" });
+  });
+});
