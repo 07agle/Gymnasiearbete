@@ -92,7 +92,9 @@ app.post("/api/routes", async (req, res) => {
 // GET: Hämta alla runs
 app.get("/api/runs", async (req, res) => {
   try {
-    const rows = await pool.query("SELECT * FROM runs WHERE routeId =?",[req.query.routeId]);
+    const rows = await pool.query(`SELECT runs.* FROM runs 
+      INNER JOIN routes ON runs.routeId = routes.id 
+      WHERE routes.uid = ?`, [req.session.userId]);
     res.json(rows);
   } catch (err) {
     console.error(err);

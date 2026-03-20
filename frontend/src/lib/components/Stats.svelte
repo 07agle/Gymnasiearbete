@@ -7,7 +7,7 @@
 
      async function loadRuns() {
       totalDistanceRun = 0;
-      const res = await fetch("/api/runs");
+      const res = await fetch("http://localhost:3001/api/runs", { credentials: "include" });
       const runs = await res.json();
 
     for (let run of runs) {

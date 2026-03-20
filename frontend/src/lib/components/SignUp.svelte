@@ -24,7 +24,7 @@
 <form onsubmit={register} >
   <h2>Sign Up</h2>
   <input type="text" placeholder="Username" required bind:value={username}/>
-  <input type="password" placeholder="password" autocomplete="current-password" required bind:value={password} />
+  <input type="password" placeholder="password" required bind:value={password} />
   <button type="submit">Submit</button>
 </form>
 

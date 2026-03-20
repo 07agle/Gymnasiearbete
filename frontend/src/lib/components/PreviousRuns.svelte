@@ -5,7 +5,7 @@
   let runObject = $state([]);
 
   async function loadRuns() {
-    const res = await fetch("/api/runs");
+    const res = await fetch("http://localhost:3001/api/runs", { credentials: "include" });
     runs = await res.json();
     renderRuns();
   }
@@ -21,8 +21,9 @@
   }
 
   async function deleteRun(id) {
-    const res = await fetch(`/api/runs/${id}`, {
+    const res = await fetch(`http://localhost:3001/api/runs/${id}`, {
       method: "DELETE",
+      credentials: "include" // Viktigt för att servern ska veta vem du är
     });
 
     if (res.ok) {
