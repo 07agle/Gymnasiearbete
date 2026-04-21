@@ -60,6 +60,7 @@ onMount(async () => {
     <div class="loader">
       <p><i class="fa-solid fa-spinner fa-spin"></i> Laddar...</p>
     </div>
+    
 
   {:else if isLoggedIn} <div class="app-container">
       <div class="leftPanel">
@@ -67,9 +68,10 @@ onMount(async () => {
           <Stats totalDistance={totalDistance}/>
           <AddRun routeId={currentRoute.id}/>
           <PreviousRuns/>
-          <button class="logoutBtn" onclick={logout}>Logout</button>
         {/if}
+        <button class="logoutBtn" onclick={logout}>Logout</button>
       </div>
+      
       
       <Map currentRoute={currentRoute} routeExist={routeExist}></Map>
 

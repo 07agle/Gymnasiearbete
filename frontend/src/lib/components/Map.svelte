@@ -244,6 +244,7 @@ async function loadRuns() {
 
   <div id="mapContainer">
     {#if !routeExist && !routeSubmitted}
+      <h1>Välj en startpunkt och slutpunkt till resan du vill springa</h1>
       <button onclick={confirmRoute}>Confirm Route</button>
     {/if}
     <div bind:this={mapContainer} class="map"></div>
@@ -255,6 +256,25 @@ async function loadRuns() {
     height: 100%;
     width: 100%;
     background-color: #AAD3DF;
+  }
+
+  h1{
+    position: absolute;
+    top: 5%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+
+    padding: 0.67rem 1rem;
+    font-size: 1em;
+    border: none;
+    border-radius: 6px;
+
+    background:  #ffa600;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    transition: 0.3s ease;
+    color: white;
   }
 
   button {

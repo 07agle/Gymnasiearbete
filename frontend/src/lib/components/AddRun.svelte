@@ -37,7 +37,9 @@ console.log("Servern sparade:", saved);
 
 <form>
   <h3>Lägg till runda</h3>
+  <p>Skriv in antalet meter du sprang:</p>
   <input type="number" min="1" bind:value={distanceRun}/>
+  <p>Skriv in datumet: </p>
   <input type="date" bind:value={date}/>
   <button onclick={submitRun}>Submit</button>
 </form>
