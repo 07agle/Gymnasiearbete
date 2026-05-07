@@ -1,4 +1,6 @@
 <script>
+// @ts-nocheck
+
     let username = $state("");
     let password = $state("");
     
@@ -10,15 +12,16 @@
   
       }
       //Skicka POST-request till backend för att spara user i databasen
-      const res = await fetch("http://localhost:3001/api/login", {
+      const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(user),
         credentials: "include"
       });
-      const saved = await res.json();
-      console.log("Servern sparade:", saved);
+      
       if (res.ok) {
+        const saved = await res.json();
+      console.log("Servern sparade:", saved);
     // Om inloggningen lyckades, ladda om sidan
     window.location.reload();
       }

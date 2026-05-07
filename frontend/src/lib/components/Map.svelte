@@ -1,4 +1,6 @@
 <script>
+// @ts-nocheck
+
   import * as L from "leaflet";
   import { onMount } from "svelte";
   import "leaflet/dist/leaflet.css";
@@ -237,10 +239,7 @@ async function loadRuns() {
     distanceRun += Number(run.distance);
   }
 }
-
-
 </script>
-
 
   <div id="mapContainer">
     {#if !routeExist && !routeSubmitted}

@@ -1,16 +1,19 @@
 <script>
+// @ts-nocheck
+
   let username = $state("");
   let password = $state("");
   
   async function register(event) {
-    event.preventDefault();
+    
     const user = {
         username: username,
         password: password,
 
     }
+    
     //Skicka POST-request till backend för att spara user i databasen
-    const res = await fetch("http://localhost:3001/api/register", {
+    const res = await fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(user),

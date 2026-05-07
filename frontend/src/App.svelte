@@ -1,5 +1,7 @@
 
 <script>
+// @ts-nocheck
+
 import Map from "./lib/components/Map.svelte";
 import Stats from "./lib/components/Stats.svelte";
 import AddRun from "./lib/components/AddRun.svelte";
@@ -20,7 +22,7 @@ import "leaflet/dist/leaflet.css";
 
   async function loadRoutes() {
   try {
-    const res = await fetch("http://localhost:3001/api/routes", { credentials: "include" });
+    const res = await fetch("/api/routes", { credentials: "include" });
     
     if (res.ok) {
       const data = await res.json();
@@ -40,7 +42,7 @@ import "leaflet/dist/leaflet.css";
 }
 
 async function logout() {
-    await fetch("http://localhost:3001/api/logout", { 
+    await fetch("/api/logout", { 
       method: "POST", 
       credentials: "include" 
     });
