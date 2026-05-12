@@ -33,9 +33,9 @@
 
 <div class="statsContainer">
 <h3>Statistik</h3>
-  <p><b>Total distance: </b> {Math.round(totalDistance/1000)}km</p>
-  <p><b>Distance run so far: </b> {Math.round(totalDistanceRun/1000)}km</p>
-  <p><b>Distance left: </b> {Math.round(distanceLeft/1000)}km</p>
+  <p><b>Totala distansen: </b> {Math.round(totalDistance/1000)}km</p>
+  <p><b>Distanse sprungen hittills: </b> {Math.round(totalDistanceRun/1000)}km</p>
+  <p><b>Distans kvar: </b> {Math.round(distanceLeft/1000)}km</p>
   <div class="progressContainer">
     <div class="progressBar" style="width: {progress}%;">{progress}%</div>
   </div>
@@ -43,6 +43,7 @@
 
 <style>
   .statsContainer {
+    margin-top: 5rem;
     display: flex;
     flex-direction: column;
     padding: 1rem;

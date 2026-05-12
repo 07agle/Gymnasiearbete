@@ -25,10 +25,10 @@
 </script>
 
 <form onsubmit={register} >
-  <h2>Sign Up</h2>
+  <h2>Registrera konto</h2>
   <input type="text" placeholder="Username" required bind:value={username}/>
   <input type="password" placeholder="password" required bind:value={password} />
-  <button type="submit">Submit</button>
+  <button type="submit">Bekräfta</button>
 </form>
 
 <style>

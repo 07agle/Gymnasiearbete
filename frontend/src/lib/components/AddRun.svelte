@@ -41,7 +41,7 @@ console.log("Servern sparade:", saved);
   <input type="number" min="1" bind:value={distanceRun}/>
   <p>Skriv in datumet: </p>
   <input type="date" bind:value={date}/>
-  <button onclick={submitRun}>Submit</button>
+  <button onclick={submitRun}>Bekräfta</button>
 </form>
 
 <style>

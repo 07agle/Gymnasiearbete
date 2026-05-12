@@ -61,6 +61,7 @@ h1 {
   background-image: radial-gradient(#d0d0d0 2px, transparent 1px);
   background-size: 12px 12px;
   padding: 2rem;
+  overflow-y: auto;
 }
 
 form{

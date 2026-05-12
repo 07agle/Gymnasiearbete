@@ -30,10 +30,10 @@
   </script>
   
   <form onsubmit={login} >
-    <h2>Log in</h2>
+    <h2>Logga in</h2>
     <input type="text" placeholder="Username" required bind:value={username}/>
     <input type="password" placeholder="password" required bind:value={password} />
-    <button type="submit">Submit</button>
+    <button type="submit">Bekräfta</button>
   </form>
   
   <style>

@@ -1,0 +1,1 @@
+export let mode = $state({value: "view"});

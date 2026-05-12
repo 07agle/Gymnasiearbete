@@ -8,8 +8,10 @@ import AddRun from "./lib/components/AddRun.svelte";
 import PreviousRuns from "./lib/components/PreviousRuns.svelte";
 import SignUp from "./lib/components/SignUp.svelte";
 import LogIn from "./lib/components/LogIn.svelte";
+import RouteList from "./lib/components/RouteList.svelte";
 import "leaflet/dist/leaflet.css";
   import { onMount } from "svelte";
+  import { mode } from "./lib/stores/mode.svelte";
   
   let routes = $state([]);
   let routeExist = $derived(routes.length > 0 ? true : false);
@@ -66,12 +68,13 @@ onMount(async () => {
 
   {:else if isLoggedIn} <div class="app-container">
       <div class="leftPanel">
-        {#if routes.length > 0}
+        {#if mode.value !== "create"}
           <Stats totalDistance={totalDistance}/>
           <AddRun routeId={currentRoute.id}/>
           <PreviousRuns/>
-        {/if}
-        <button class="logoutBtn" onclick={logout}>Logout</button>
+          <RouteList/>
+                  {/if}
+        <button class="logoutBtn" onclick={logout}>Logga ut</button>
       </div>
       
       

@@ -1,8 +1,11 @@
 <script>
-// @ts-nocheck
+  // @ts-nocheck
 
   import * as L from "leaflet";
   import { onMount } from "svelte";
+  import { mode } from "../stores/mode.svelte";
+  import { selectedRoute } from "../stores/selectedRoute.svelte";
+
   import "leaflet/dist/leaflet.css";
   import "leaflet-routing-machine";
   import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
@@ -21,9 +24,10 @@
     shadowSize: [32, 32],
   });
 
-const startIcon = L.icon({
+  const startIcon = L.icon({
     iconRetinaUrl: markerIcon2x,
-    iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
+    iconUrl:
+      "https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers/img/marker-icon-green.png",
     shadowUrl: markerShadow,
     iconSize: [20, 32],
     iconAnchor: [10, 32],
@@ -42,13 +46,16 @@ const startIcon = L.icon({
   let currentRouteCoords;
   let totalDistance = $state(0);
   let routeSubmitted = $state(false);
+  let routeReady = $state(false);
+
   let runningIcon = L.icon({
-    iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png", 
+    iconUrl:
+      "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
     iconSize: [20, 32],
     iconAnchor: [10, 32],
     shadowSize: [32, 32],
     shadowUrl: markerShadow,
-});
+  });
 
   let { currentRoute, routeExist } = $props();
 
@@ -62,34 +69,62 @@ const startIcon = L.icon({
       noWrap: true,
     }).addTo(map);
 
- if (!routeExist  && navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition((position) => {
-      map.flyTo(
-        [position.coords.latitude, position.coords.longitude],
-        15
-      );
-    });
-  }
+    if (mode.value == "create" && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        map.flyTo([position.coords.latitude, position.coords.longitude], 15);
+      });
+    }
 
-  console.log("Routeexists: "+routeExist);
-    map.on("click", onMapClick);
+    if (mode.value === "create") {
+      // aktivera create-läge fullt
+      map.on("click", onMapClick);
+    }
     loadRuns();
+    if (mode.value == "view") {
+      loadRoutes();
+    }
   });
 
   $effect(() => {
-  if (!map){
-    return;
-  }
-  else{
-    loadRoutes();
-    
-  }
-});
+    if (!map) return;
 
+    map.off("click", onMapClick);
+
+    if (mode.value == "create") {
+      map.on("click", onMapClick);
+      if (routeControl) {
+        routeControl.remove();
+        routeControl = undefined;
+      }
+      if (currentMarker) {
+        map.removeLayer(currentMarker);
+      }
+
+      totalDistance = 0;
+    }
+    if (mode.value === "view" && selectedRoute.value) {
+      if (routeControl) {
+        routeControl.remove();
+        routeControl = undefined;
+      }
+
+      const start = L.latLng(
+        selectedRoute.value.startLat,
+        selectedRoute.value.startLng
+      );
+
+      const end = L.latLng(
+        selectedRoute.value.endLat,
+        selectedRoute.value.endLng
+      );
+
+      drawRoute(start, end);
+    }
+  });
   //När man klickar på kartan
   function onMapClick(e) {
     //Kan bara klicka om en route inte är bestämd
-    if (!routeExist) {
+    if (mode.value == "create") {
       //Sparar koordinaterna för klicket
       let latClick = e.latlng.lat;
       let lngClick = e.latlng.lng;
@@ -100,7 +135,7 @@ const startIcon = L.icon({
       //Skapar ny marker där man klickar och lägger till på kartan
       let newMarker = L.marker([latClick, lngClick], {
         draggable: false,
-        icon: iconToUse
+        icon: iconToUse,
       }).addTo(map);
 
       markerList.push(newMarker);
@@ -120,21 +155,18 @@ const startIcon = L.icon({
       if (markerList.length === 2) {
         let start = markerList[0].getLatLng();
         let end = markerList[1].getLatLng();
-
         drawRoute(start, end);
       }
     }
   }
 
   function drawRoute(start, end) {
-    
     if (routeControl) {
       routeControl.remove();
       routeControl = undefined;
     }
 
     routeControl = /** @type {any} */ (L).Routing.control({
-
       //Attribut för rutten
       lineOptions: {
         styles: [{ color: "orange", weight: 4 }],
@@ -149,10 +181,12 @@ const startIcon = L.icon({
       .addTo(map) //Lägger till rutten på kartan
       //När rutten hittas så räknar den ut den totala avståndet
       .on("routesfound", function (e) {
+        console.log("ROUTE FOUND FIRED");
         let route = e.routes[0];
         currentRouteCoords = route.coordinates;
         console.log(currentRouteCoords);
         totalDistance = route.summary.totalDistance;
+        routeReady = true;
         console.log("Distans (meter):", totalDistance);
         console.log("Distans (km):", (totalDistance / 1000).toFixed(2));
         getCoordinateAtDistance(currentRouteCoords, distanceRun);
@@ -160,37 +194,49 @@ const startIcon = L.icon({
   }
 
   //Hämta sparade rutter från databasen när sidan startar
-  function loadRoutes() {
-    if (routeExist) {
-      const start = L.latLng(currentRoute.startLat, currentRoute.startLng);
-      const end = L.latLng(currentRoute.endLat, currentRoute.endLng);
+  async function loadRoutes() {
+    const res = await fetch("/api/routes", { credentials: "include" });
+    const routes = await res.json();
+
+    // Sätt mode baserat på data
+    if (!routes || routes.length === 0) {
+      mode.value = "create";
+      return;
+    }
+    if (mode.value == "view") {
+      const start = L.latLng(
+        selectedRoute.value.startLat,
+        selectedRoute.value.startLng
+      );
+      const end = L.latLng(
+        selectedRoute.value.endLat,
+        selectedRoute.value.endLng
+      );
       drawRoute(start, end);
     }
-    console.log(currentRoute);
   }
 
   //Funktion som räknar ut närmsta koordinaten vid den distansen du matade in
-function getCoordinateAtDistance(currentRouteCoords, distanceRun) {
-  let distanceCalculated = 0;
-  let coordinateRunTo;
-  for (let i = 1; i < currentRouteCoords.length; i++) {
-    if (distanceCalculated < distanceRun) {
-      distanceCalculated += currentRouteCoords[i].distanceTo(
-        currentRouteCoords[i - 1]);
-    } else if (distanceCalculated >= distanceRun) {
-      coordinateRunTo = currentRouteCoords[i];
-      break;
+  function getCoordinateAtDistance(currentRouteCoords, distanceRun) {
+    let distanceCalculated = 0;
+    let coordinateRunTo;
+    for (let i = 1; i < currentRouteCoords.length; i++) {
+      if (distanceCalculated < distanceRun) {
+        distanceCalculated += currentRouteCoords[i].distanceTo(
+          currentRouteCoords[i - 1]
+        );
+      } else if (distanceCalculated >= distanceRun) {
+        coordinateRunTo = currentRouteCoords[i];
+        break;
+      }
     }
-  }
 
-  console.log(coordinateRunTo);
-  //Om det redan finns en marker så ta bort den
-  if (currentMarker) {
-    map.removeLayer(currentMarker);
+    //Om det redan finns en marker så ta bort den
+    if (currentMarker) {
+      map.removeLayer(currentMarker);
+    }
+    currentMarker = L.marker(coordinateRunTo, { icon: runningIcon }).addTo(map);
   }
-  currentMarker = L.marker(coordinateRunTo, { icon: runningIcon }).addTo(map);
-  console.log("Current position:", coordinateRunTo);
-}
 
   //Bekräftar routen och sparar den i databasen
   async function confirmRoute() {
@@ -201,11 +247,17 @@ function getCoordinateAtDistance(currentRouteCoords, distanceRun) {
     //Annars ska man inte kunna klicka på kartan något mer
     else {
       routeSubmitted = true;
+      mode.value = "view";
+
       map.off("click", onMapClick);
     }
 
     const start = markerList[0].getLatLng();
     const end = markerList[1].getLatLng();
+
+    markerList = [];
+    currentRouteCoords = null;
+    distanceRun = 0;
 
     //Skapar ett objekt som sedan skickas till backend för att läggas in i databasen
     const wholeRoute = {
@@ -228,36 +280,38 @@ function getCoordinateAtDistance(currentRouteCoords, distanceRun) {
 
     //Spara den originella hela rutten i en databas --- KLAR :D
     location.reload();
-}
+  }
 
-async function loadRuns() {
-      distanceRun = 0;
-      const res = await fetch("/api/runs");
-      const runs = await res.json();
+  async function loadRuns() {
+    distanceRun = 0;
+    const res = await fetch("/api/runs");
+    const runs = await res.json();
 
     for (let run of runs) {
-    distanceRun += Number(run.distance);
+      distanceRun += Number(run.distance);
+    }
   }
-}
 </script>
 
-  <div id="mapContainer">
-    {#if !routeExist && !routeSubmitted}
-      <h1>Välj en startpunkt och slutpunkt till resan du vill springa</h1>
-      <button onclick={confirmRoute}>Confirm Route</button>
+<div id="mapContainer">
+  {#if mode.value == "create" && !routeSubmitted}
+    <h1>Välj en startpunkt och slutpunkt till resan du vill springa</h1>
+    {#if routeReady}
+      <h2>{(totalDistance / 1000).toFixed(2)} km</h2>
     {/if}
-    <div bind:this={mapContainer} class="map"></div>
-  </div>
-
+    <button onclick={confirmRoute}>Bekräfta rutt</button>
+  {/if}
+  <div bind:this={mapContainer} class="map"></div>
+</div>
 
 <style>
   .map {
     height: 100%;
     width: 100%;
-    background-color: #AAD3DF;
+    background-color: #aad3df;
   }
 
-  h1{
+  h1 {
     position: absolute;
     top: 5%;
     left: 50%;
@@ -269,7 +323,26 @@ async function loadRuns() {
     border: none;
     border-radius: 6px;
 
-    background:  #ffa600;
+    background: #ffa600;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    transition: 0.3s ease;
+    color: white;
+  }
+
+  h2 {
+    position: absolute;
+    top: 12%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+
+    padding: 0.67rem 1rem;
+    font-size: 1em;
+    border: none;
+    border-radius: 6px;
+
+    background: #ffa600;
     cursor: pointer;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
     transition: 0.3s ease;
@@ -288,14 +361,14 @@ async function loadRuns() {
     border: none;
     border-radius: 6px;
 
-    background:  #ffa600;
+    background: #ffa600;
     cursor: pointer;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
     transition: 0.3s ease;
     color: white;
   }
 
-  button:hover{
+  button:hover {
     background-color: #e69500;
   }
 
@@ -303,7 +376,7 @@ async function loadRuns() {
     position: relative;
     height: 100%;
     width: 100%;
-    top:0;
+    top: 0;
     left: 0;
   }
 </style>
